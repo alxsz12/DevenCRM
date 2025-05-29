@@ -24,7 +24,7 @@ import { useContacts } from '../context/ContactContext';
 import { styled } from '@mui/material/styles';
 
 const ContactPill = styled(Paper)(({ theme }) => ({  padding: theme.spacing(2),
-  paddingRight: '40px',
+  paddingRight: '90px',
   marginBottom: theme.spacing(2),
   borderRadius: '24px',
   cursor: 'pointer',
@@ -38,15 +38,14 @@ const ContactPill = styled(Paper)(({ theme }) => ({  padding: theme.spacing(2),
 }));
 
 const StatusIndicator = styled('div')(({ color }) => ({
-  width: '36px',
+  width: '65px',
   height: 'calc(100% + 2px)',
   backgroundColor: color,
   position: 'absolute',
   right: '-1px',
   top: '-1px',
   bottom: '-1px',
-  borderTopRightRadius: '24px',
-  borderBottomRightRadius: '24px',
+  borderRadius: '24px',
   transition: 'background-color 0.3s'
 }));
 
