@@ -13,40 +13,40 @@ import {
   InputLabel,
   Paper
 } from '@mui/material';
-import { Message as MessageIcon } from '@mui/icons-material';
+import { 
+  Message as MessageIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon
+} from '@mui/icons-material';
 import { useContacts } from '../context/ContactContext';
 import { styled } from '@mui/material/styles';
 
-const ContactPill = styled(Paper)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: theme.spacing(2),
-  paddingRight: theme.spacing(6), // Added padding for status indicator
-  borderRadius: 32,
+const ContactPill = styled(Paper)(({ theme }) => ({  padding: theme.spacing(2),
+  paddingRight: '40px',
   marginBottom: theme.spacing(2),
-  boxShadow: '0 3px 6px rgba(0,0,0,0.16)',
+  borderRadius: '24px',
+  cursor: 'pointer',
+  position: 'relative',
+  overflow: 'visible',
   transition: 'all 0.3s ease',
-  border: '1px solid #e0e0e0',
-  position: 'relative', // Added for status indicator positioning
-  overflow: 'hidden',
-  backgroundColor: '#ffffff',
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
-    borderColor: '#bdbdbd'
+    boxShadow: theme.shadows[3]
   }
 }));
 
 const StatusIndicator = styled('div')(({ color }) => ({
-  width: 48,
-  height: '100%',
+  width: '36px',
+  height: 'calc(100% + 2px)',
   backgroundColor: color,
   position: 'absolute',
-  right: 0,
-  top: 0,
-  borderTopRightRadius: 32,
-  borderBottomRightRadius: 32,
+  right: '-1px',
+  top: '-1px',
+  bottom: '-1px',
+  borderTopRightRadius: '24px',
+  borderBottomRightRadius: '24px',
   transition: 'background-color 0.3s'
 }));
 
@@ -58,13 +58,17 @@ const getStatusColor = (daysSinceContact, reminderFrequency) => {
 };
 
 const ContactInfo = styled('div')({
-  flex: 1
+  flex: 1,
+  marginLeft: '16px',
+  minWidth: 0,
 });
 
-const ContactsPage = () => {  const { contacts, addContact, updateContactReminder, updateLastContacted, getDaysSinceLastContact } = useContacts();
+const ContactsPage = () => {  
+  const { contacts, addContact, updateContactReminder, updateLastContacted, getDaysSinceLastContact } = useContacts();
   const [open, setOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
   const [newContact, setNewContact] = useState({
     name: '',
     phone: '',
@@ -98,54 +102,151 @@ const ContactsPage = () => {  const { contacts, addContact, updateContactReminde
           const daysSince = getDaysSinceLastContact(contact.lastContacted);
           const reminderDays = contact.reminder.frequency * (contact.reminder.unit === 'weeks' ? 7 : contact.reminder.unit === 'months' ? 30 : 1);
           
-          return (
-            <ContactPill key={contact.id} elevation={1}>
-              <ContactInfo>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <div>
-                    <Typography variant="h6" sx={{ fontWeight: 500 }}>{contact.name}</Typography>
-                    <Typography color="textSecondary" sx={{ fontSize: '0.9rem' }}>{contact.phone}</Typography>
-                    <Typography color="textSecondary" sx={{ fontSize: '0.9rem' }}>{contact.email}</Typography>
-                  </div>
-                  <Stack spacing={0.5}>
-                    <Typography variant="body2" color="textSecondary">
-                      Last contacted: {daysSince} days ago
-                    </Typography>
-                    <Typography variant="body2" color="primary" sx={{ display: 'flex', alignItems: 'center' }}>
-                      Reminder: Every {contact.reminder.frequency} {contact.reminder.unit}
-                      <Button 
-                        size="small" 
-                        onClick={() => {
-                          setSelectedContact(contact);
-                          setReminderOpen(true);
-                        }}
-                        sx={{ ml: 1 }}
-                      >
-                        Change
-                      </Button>
-                    </Typography>
+          return (            <ContactPill 
+              key={contact.id} 
+              elevation={1} 
+              expanded={expandedId === contact.id}
+              onClick={() => setExpandedId(expandedId === contact.id ? null : contact.id)}
+            >              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                width: '100%',
+                position: 'relative'
+              }}>
+                <ContactInfo>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <div>
+                      <Typography variant="h6" sx={{ fontWeight: 500 }}>{contact.name}</Typography>
+                      {!expandedId === contact.id && (
+                        <Typography variant="body2" color="textSecondary">
+                          Last contacted: {daysSince} days ago | 
+                          Reminder: Every {contact.reminder.frequency} {contact.reminder.unit}
+                        </Typography>
+                      )}
+                      {expandedId === contact.id && (
+                        <>
+                          <Typography color="textSecondary" sx={{ fontSize: '0.9rem' }}>{contact.phone}</Typography>
+                          <Typography color="textSecondary" sx={{ fontSize: '0.9rem' }}>{contact.email}</Typography>
+                        </>
+                      )}
+                    </div>
                   </Stack>
+                </ContactInfo>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {expandedId === contact.id && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateLastContacted(contact.id);
+                      }}
+                      color="primary"
+                      size="small"
+                      sx={{ 
+                        zIndex: 1,
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,1)'
+                        }
+                      }}
+                    >
+                      <MessageIcon />
+                    </IconButton>
+                  )}
+                  {expandedId === contact.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </Stack>
-              </ContactInfo>              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton 
-                  onClick={() => {
-                    updateLastContacted(contact.id);
-                  }}
-                  color="primary"
-                  size="small"
-                  sx={{ 
-                    zIndex: 1,
-                    mr: 1,
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255,255,255,1)'
-                    }
-                  }}
-                >
-                  <MessageIcon />
-                </IconButton>
+              </Box>              {expandedId === contact.id && (
+                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #e0e0e0' }}>
+                  <Stack spacing={2}>
+                    <Stack spacing={1}>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Typography sx={{ fontSize: '0.9rem' }}>
+                          <strong>Phone:</strong> {contact.phone}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.9rem' }}>
+                          <strong>Email:</strong> {contact.email}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body2" color="textSecondary">
+                          Last contacted: {daysSince} days ago
+                        </Typography>
+                        <Typography variant="body2" color="primary" sx={{ display: 'flex', alignItems: 'center' }}>
+                          Reminder: Every {contact.reminder.frequency} {contact.reminder.unit}
+                          <Button 
+                            size="small" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedContact(contact);
+                              setReminderOpen(true);
+                            }}
+                            sx={{ ml: 1 }}
+                          >
+                            Change
+                          </Button>
+                        </Typography>
+                      </Stack>
+                    </Stack>
+
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        startIcon={<PhoneIcon />}
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = `tel:${contact.phone}`;
+                        }}
+                      >
+                        Call
+                      </Button>
+                      <Button
+                        startIcon={<MessageIcon />}
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = `sms:${contact.phone}`;
+                        }}
+                      >
+                        Text
+                      </Button>
+                      <Button
+                        startIcon={<EmailIcon />}
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = `mailto:${contact.email}`;
+                        }}
+                      >
+                        Email
+                      </Button>
+                    </Stack>
+
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Recent Notes</Typography>
+                      {contact.notes && contact.notes.length > 0 ? (
+                        contact.notes.map((note) => (
+                          <Paper 
+                            key={note.id} 
+                            variant="outlined" 
+                            sx={{ p: 1.5, backgroundColor: '#f5f5f5', mb: 1 }}
+                          >
+                            <Typography variant="body2" color="textSecondary">
+                              {new Date(note.date).toLocaleDateString()}
+                            </Typography>
+                            <Typography>{note.content}</Typography>
+                          </Paper>
+                        ))
+                      ) : (
+                        <Typography color="textSecondary">No notes yet</Typography>
+                      )}
+                    </Box>
+                  </Stack>
+                </Box>
+              )}
+              
+              {expandedId !== contact.id && (
                 <StatusIndicator color={getStatusColor(daysSince, reminderDays)} />
-              </Box>
+              )}
             </ContactPill>
           );
         })}

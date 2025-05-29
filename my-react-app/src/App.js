@@ -5,7 +5,6 @@ import { ContactProvider } from './context/ContactContext';
 import ContactsPage from './pages/ContactsPage';
 import NotesPage from './pages/NotesPage';
 import GroupsPage from './pages/GroupsPage';
-import logo from './logo.svg';
 import './App.css';
 
 function App() {
